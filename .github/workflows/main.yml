@@ -25,9 +25,9 @@ jobs:
       - name: Run Tests
         run: npm test
 
-  build-and-push:
+  build-scan-and-push:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -37,12 +37,21 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
- 
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v5
+
+      - name: Build Docker image
+        run: |
+          docker build -t carlosdaniel2/node-ci:${{ github.sha }} .
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.20.0
         with:
-          context: .
-          push: true
-          tags: |
-            carlosdaniel2/node-ci:${{ github.sha }}
-            carlosdaniel2/node-ci:latest
+          image-ref: carlosdaniel2/node-ci:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Docker image
+        run: |
+          docker tag carlosdaniel2/node-ci:${{ github.sha }} carlosdaniel2/node-ci:latest
+          docker push carlosdaniel2/node-ci:${{ github.sha }}
+          docker push carlosdaniel2/node-ci:latest

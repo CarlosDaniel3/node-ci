@@ -44,5 +44,26 @@ jobs:
           context: .
           push: true
           tags: |
-            carlosdaniel2/${{ github.repository }}:${{ github.sha }}
-            carlosdaniel2/${{ github.repository }}:latest
+            carlosdaniel2/node-ci:${{ github.sha }}
+            carlosdaniel2/node-ci:latest
+
+  trivy-scan:
+    runs-on: Scan Image
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: myapp:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Fail on critical vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: myapp:${{ github.sha }}
+          exit-code: '1'
+          severity: 'CRITICAL'

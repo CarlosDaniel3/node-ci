@@ -44,5 +44,5 @@ jobs:
           context: .
           push: true
           tags: |
-            carlosdaniel2/my-js-app:${{ github.sha }}
-            carlosdaniel2/my-js-app:latest
+            carlosdaniel2/${{ github.repository }}:${{ github.sha }}
+            carlosdaniel2/${{ github.repository }}:latest
